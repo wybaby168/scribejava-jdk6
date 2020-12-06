@@ -30,7 +30,7 @@ public class HMACSha1SignatureService implements SignatureService {
             Preconditions.checkEmptyString(baseString, "Base string cant be null or empty string");
             Preconditions.checkEmptyString(apiSecret, "Api secret cant be null or empty string");
             return doSign(baseString, OAuthEncoder.encode(apiSecret) + '&' + OAuthEncoder.encode(tokenSecret));
-        } catch (UnsupportedEncodingException | NoSuchAlgorithmException | InvalidKeyException | RuntimeException e) {
+        } catch (Exception e) {
             throw new OAuthSignatureException(baseString, e);
         }
     }

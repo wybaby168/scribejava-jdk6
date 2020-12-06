@@ -24,14 +24,8 @@
  */
 package com.github.scribejava.core.java8;
 
-import java.io.FilterOutputStream;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Objects;
 
 /**
  * This class consists exclusively of static methods for obtaining encoders and decoders for the Base64 encoding scheme.
@@ -117,7 +111,7 @@ public class Base64 {
      * specified in Table 1 of RFC 2045.
      */
     public static Encoder getMimeEncoder(int lineLength, byte[] lineSeparator) {
-        Objects.requireNonNull(lineSeparator);
+        requireNonNull(lineSeparator);
         int[] base64 = Decoder.FROM_BASE_64;
         for (byte b : lineSeparator) {
             if (base64[b & 0xff] != -1) {
@@ -159,6 +153,29 @@ public class Base64 {
      */
     public static Decoder getMimeDecoder() {
         return Decoder.RFC2045;
+    }
+
+    public static void fill(int[] a, int val) {
+        int i = 0;
+
+        for (int len = a.length; i < len; ++i) {
+            a[i] = val;
+        }
+
+    }
+
+    public static <T> T requireNonNull(T obj) {
+        if (obj == null) {
+            throw new NullPointerException();
+        } else {
+            return obj;
+        }
+    }
+
+    public static byte[] copyOf(byte[] original, int newLength) {
+        byte[] copy = new byte[newLength];
+        System.arraycopy(original, 0, copy, 0, Math.min(original.length, newLength));
+        return copy;
     }
 
     /**
@@ -247,10 +264,11 @@ public class Base64 {
             byte[] dst = new byte[len];
             int ret = encode0(src, 0, src.length, dst);
             if (ret != dst.length) {
-                return Arrays.copyOf(dst, ret);
+                return copyOf(dst, ret);
             }
             return dst;
         }
+
 
         /**
          * Encodes all bytes from the specified byte array using the {@link Base64} encoding scheme, writing the
@@ -324,7 +342,7 @@ public class Base64 {
                 ret = encode0(src, 0, src.length, dst);
             }
             if (ret != dst.length) {
-                dst = Arrays.copyOf(dst, ret);
+                dst = copyOf(dst, ret);
             }
             return ByteBuffer.wrap(dst);
         }
@@ -341,7 +359,7 @@ public class Base64 {
          * @return the output stream for encoding the byte data into the specified Base64 encoded format
          */
         public OutputStream wrap(OutputStream os) {
-            Objects.requireNonNull(os);
+            requireNonNull(os);
             return new EncOutputStream(os, isURL ? TO_BASE_64_URL : TO_BASE_64,
                     newline, linemax, doPadding);
         }
@@ -449,7 +467,7 @@ public class Base64 {
          */
         private static final int[] FROM_BASE_64 = new int[256];
         static {
-            Arrays.fill(FROM_BASE_64, -1);
+            fill(FROM_BASE_64, -1);
             for (int i = 0; i < Encoder.TO_BASE_64.length; i++) {
                 FROM_BASE_64[Encoder.TO_BASE_64[i]] = i;
             }
@@ -461,7 +479,7 @@ public class Base64 {
          */
         private static final int[] FROM_BASE_64_URL = new int[256];
         static {
-            Arrays.fill(FROM_BASE_64_URL, -1);
+            fill(FROM_BASE_64_URL, -1);
             for (int i = 0; i < Encoder.TO_BASE_64_URL.length; i++) {
                 FROM_BASE_64_URL[Encoder.TO_BASE_64_URL[i]] = i;
             }
@@ -491,7 +509,7 @@ public class Base64 {
             byte[] dst = new byte[outLength(src, 0, src.length)];
             int ret = decode0(src, 0, src.length, dst);
             if (ret != dst.length) {
-                dst = Arrays.copyOf(dst, ret);
+                dst = copyOf(dst, ret);
             }
             return dst;
         }
@@ -510,7 +528,12 @@ public class Base64 {
          * @throws IllegalArgumentException if {@code src} is not in valid Base64 scheme
          */
         public byte[] decode(String src) {
-            return decode(src.getBytes(StandardCharsets.ISO_8859_1));
+            try {
+                return decode(src.getBytes("ISO-8859-1"));
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            return null;
         }
 
         /**
@@ -602,7 +625,7 @@ public class Base64 {
          * @return the input stream for decoding the specified Base64 encoded byte stream
          */
         public InputStream wrap(InputStream is) {
-            Objects.requireNonNull(is);
+            requireNonNull(is);
             return new DecInputStream(is, isURL ? FROM_BASE_64_URL : FROM_BASE_64, isMIME);
         }
 

@@ -1,7 +1,8 @@
 package com.github.scribejava.core.model;
 
 import com.github.scribejava.core.utils.Preconditions;
-import java.util.Objects;
+
+import com.github.scribejava.core.java8.Objects;
 
 /**
  * Represents an OAuth 2 Access token.

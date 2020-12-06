@@ -22,7 +22,9 @@ public abstract class StreamUtils {
         Preconditions.checkNotNull(is, "Cannot get String from a null object");
         final char[] buffer = new char[0x10000];
         final StringBuilder out = new StringBuilder();
-        try (Reader in = new InputStreamReader(is, "UTF-8")) {
+        Reader in = null;
+        try {
+            in = new InputStreamReader(is, "UTF-8");
             int read;
             do {
                 read = in.read(buffer, 0, buffer.length);
@@ -30,6 +32,10 @@ public abstract class StreamUtils {
                     out.append(buffer, 0, read);
                 }
             } while (read >= 0);
+        } finally {
+            if (null != in) {
+                in.close();
+            }
         }
         return out.toString();
     }
